@@ -1,0 +1,11 @@
+{
+  "name": "duplicate-tab.js",
+  "version": "0.0.1",
+  "description": "Detect is app launched in multiple tab",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "c4605 <bolasblack@gmail.com>",
+  "license": "ISC"
+}

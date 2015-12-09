@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf8" />
+    <title>Example</title>
+  </head>
+  <body>
+    <div id="messages"></div>
+
+    <script type="text/javascript" src="../index.js"></script>
+    <script>
+      (function() {
+        window.addEventListener('duplicate-tab', function() {
+          log('✔︎');
+        });
+        window.addEventListener('duplicate-tab:cleaned', function() {
+          log('✕');
+        });
+
+        if (duplicateTab.exists()) { log('Existed︎'); }
+
+        function log(message) {
+          document.getElementById('messages').textContent += message;
+        }
+      })();
+    </script>
+  </body>
+</html>
