@@ -1,11 +1,17 @@
 ;(function() {
 
-  var storage = window.localStorage,
-      storageKey = 'duplicate-tab:checker',
+  var
+      updateStorageTimerInterval = 500,
+      updateStorageTimer,
+
       // Some browser will make setInterval slower when tab in background,
-      // so the number should be large time
-      announceDalay = 2 * 1000,
-      announceTimer,
+      // so the interval should be larger
+      announceDalayOffset = 1000 * 2,
+      announceTabCleanedTimerDalay = function() { return updateStorageTimerInterval + announceDalayOffset },
+      announceTabCleanedTimer,
+
+      storage = window.localStorage,
+      storageKey = 'duplicate-tab:checker',
       eventIds = [],
       duplicateTab
 
@@ -14,26 +20,27 @@
 
     if (storageEvent.key !== storageKey || storageEvent.storageArea !== storage) { return }
 
-    // for ie
-    // http://stackoverflow.com/a/18265557/1226532
+    // for ie: http://stackoverflow.com/a/18265557/1226532
     try { newValue = JSON.parse(event.newValue) } catch (err) { return }
     if (eventIds.indexOf(newValue.id) > -1) { return }
 
-    if (!announceTimer) {
+    if (!announceTabCleanedTimer) {
       window.dispatchEvent(new CustomEvent('duplicate-tab'))
     }
-    clearTimeout(announceTimer)
-    announceTimer = setTimeout(announceDuplicatedTabCleaned, announceDalay)
+    clearTimeout(announceTabCleanedTimer)
+    announceTabCleanedTimer = setTimeout(announceDuplicatedTabCleaned, announceTabCleanedTimerDalay())
   })
 
-  setInterval(function() {
-    var id = generateGUID()
-    eventIds.push(id)
-    storage.setItem(storageKey, JSON.stringify({id: id}))
-  }, 500)
+  updateStorage()
+  updateStorageTimer = setInterval(updateStorage, updateStorageTimerInterval)
 
   duplicateTab = {
-    exists: function() { return announceTimer != null }
+    exists: function() { return announceTabCleanedTimer != null },
+    changeInterval: function(interval) {
+      updateStorageTimerInterval = interval
+      clearInterval(updateStorageTimer)
+      updateStorageTimer = setInterval(updateStorage, interval)
+    }
   }
 
   if (typeof require === 'function') {
@@ -47,8 +54,14 @@
   }
 
   function announceDuplicatedTabCleaned() {
-    announceTimer = null
+    announceTabCleanedTimer = null
     window.dispatchEvent(new CustomEvent('duplicate-tab:cleaned'))
+  }
+
+  function updateStorage() {
+    var id = generateGUID()
+    eventIds.push(id)
+    storage.setItem(storageKey, JSON.stringify({id: id}))
   }
 
 })();

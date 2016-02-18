@@ -18,6 +18,7 @@
         });
 
         if (duplicateTab.exists()) { log('Existed︎'); }
+        duplicateTab.changeInterval(1000 * 10);
 
         function log(message) {
           document.getElementById('messages').textContent += message;
