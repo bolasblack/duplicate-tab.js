@@ -6,6 +6,7 @@
   </head>
   <body>
     <div id="messages"></div>
+    <button id="btn-disable" type="button">Disable</button>
 
     <script type="text/javascript" src="../index.js"></script>
     <script>
@@ -15,6 +16,9 @@
         });
         window.addEventListener('duplicate-tab:cleaned', function() {
           log('✕');
+        });
+        document.querySelector('#btn-disable').addEventListener('click', function() {
+          duplicateTab.disable();
         });
 
         if (duplicateTab.exists()) { log('Existed︎'); }

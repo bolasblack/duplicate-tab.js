@@ -15,31 +15,26 @@
       eventIds = [],
       duplicateTab
 
-  window.addEventListener('storage', function(storageEvent) {
-    var newValue;
-
-    if (storageEvent.key !== storageKey || storageEvent.storageArea !== storage) { return }
-
-    // for ie: http://stackoverflow.com/a/18265557/1226532
-    try { newValue = JSON.parse(event.newValue) } catch (err) { return }
-    if (eventIds.indexOf(newValue.id) > -1) { return }
-
-    if (!announceTabCleanedTimer) {
-      window.dispatchEvent(new CustomEvent('duplicate-tab'))
-    }
-    clearTimeout(announceTabCleanedTimer)
-    announceTabCleanedTimer = setTimeout(announceDuplicatedTabCleaned, announceTabCleanedTimerDalay())
-  })
-
-  updateStorage()
-  updateStorageTimer = setInterval(updateStorage, updateStorageTimerInterval)
-
   duplicateTab = {
-    exists: function() { return announceTabCleanedTimer != null },
+    disable: function() {
+      if (updateStorageTimer) {
+        clearInterval(updateStorageTimer)
+        updateStorageTimer = null
+      }
+    },
+    enable: function(interval) {
+      if (interval !== updateStorageTimerInterval) {
+        updateStorageTimerInterval = interval
+      }
+      this.disable()
+      updateStorage()
+      updateStorageTimer = setInterval(updateStorage, updateStorageTimerInterval)
+    },
     changeInterval: function(interval) {
-      updateStorageTimerInterval = interval
-      clearInterval(updateStorageTimer)
-      updateStorageTimer = setInterval(updateStorage, interval)
+      this.enable(interval)
+    },
+    exists: function() {
+      return announceTabCleanedTimer != null
     }
   }
 
@@ -48,6 +43,24 @@
   } else {
     window.duplicateTab = duplicateTab
   }
+
+  duplicateTab.enable()
+
+  window.addEventListener('storage', function(storageEvent) {
+    var newValue;
+
+    if (storageEvent.key !== storageKey || storageEvent.storageArea !== storage) { return }
+
+    // for ie: http://stackoverflow.com/a/18265557/1226532
+    try { newValue = JSON.parse(event.newValue) } catch (err) { return }
+    if (!newValue || eventIds.indexOf(newValue.id) > -1) { return }
+
+    if (!announceTabCleanedTimer) {
+      window.dispatchEvent(new CustomEvent('duplicate-tab'))
+    }
+    clearTimeout(announceTabCleanedTimer)
+    announceTabCleanedTimer = setTimeout(announceDuplicatedTabCleaned, announceTabCleanedTimerDalay())
+  })
 
   function generateGUID() {
     return '' + Date.now() + Math.random()
