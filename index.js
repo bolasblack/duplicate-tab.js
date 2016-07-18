@@ -44,8 +44,6 @@
     window.duplicateTab = duplicateTab
   }
 
-  duplicateTab.enable()
-
   window.addEventListener('storage', function(storageEvent) {
     var newValue;
 
